@@ -1,1 +1,112 @@
+body {
+    background: linear-gradient(to bottom right, #1f1c2c, #928dab);
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    color: white;
+    text-align: center;
+}
 
+header {
+    margin-top: 20px;
+}
+
+.creator-name {
+    color: #00e0ff;
+    font-weight: bold;
+}
+
+#player-name {
+    color: #ffdf6c;
+}
+
+.sudoku-container {
+    margin: 30px auto;
+    width: 360px;
+}
+
+#sudoku-board {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 2px;
+    background: #333;
+    padding: 3px;
+    border-radius: 10px;
+}
+
+.cell {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    text-align: center;
+    outline: none;
+    border: none;
+    background: #f7f7f7;
+    color: #333;
+    border-radius: 5px;
+}
+
+.cell:focus {
+    background: #fff7d6;
+}
+
+.check-btn {
+    padding: 12px 20px;
+    background: #00c8ff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 20px;
+}
+.check-btn:hover {
+    background: #00a5d1;
+}
+
+/* Overlay screens */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.welcome-box,
+.result-box {
+    background: white;
+    color: #333;
+    padding: 30px;
+    border-radius: 12px;
+    width: 300px;
+    text-align: center;
+}
+
+.welcome-box input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #aaa;
+    margin-bottom: 10px;
+}
+
+.welcome-box button,
+.result-box button {
+    padding: 12px 20px;
+    width: 100%;
+    background: #1f75ff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.result-success {
+    color: #1ab84c;
+}
+.result-fail {
+    color: #ff3b3b;
+}
