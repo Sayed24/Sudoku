@@ -1,50 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sudoku Game</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Welcome Screen -->
-    <div id="welcome-screen" class="overlay">
-        <div class="welcome-box">
-            <h1>Welcome to Modern Sudoku</h1>
-            <p>Please enter your name to begin</p>
-            <input type="text" id="player-name-input" placeholder="Your name..." />
-            <label for="difficulty">Select Difficulty:</label>
-            <select id="difficulty">
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-            </select>
-            <button onclick="startGame()">Start Game</button>
-        </div>
+<!-- Welcome Screen -->
+<div id="welcome-screen" class="overlay">
+    <div class="welcome-box">
+        <h1>Welcome to Modern Sudoku</h1>
+        <p>Please enter your name to begin</p>
+        <input type="text" id="player-name-input" placeholder="Your name..." />
+        <label for="difficulty">Select Difficulty:</label>
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        <button onclick="startGame()">Start Game</button>
     </div>
+</div>
 
-    <!-- Main Game Container -->
-    <header>
-        <h2>Created by: <span class="creator-name">Sayedrahim Sadat</span></h2>
-        <h1>Welcome, <span id="player-name"></span>!</h1>
-        <p>Time: <span id="timer">00:00</span></p>
-    </header>
+<!-- Game Header -->
+<header>
+    <h2>Created by: <span class="creator-name">Sayedrahim Sadat</span></h2>
+    <h1>Welcome, <span id="player-name"></span>!</h1>
+    <p>Time: <span id="timer">00:00</span> | <button onclick="giveHint()">Hint</button></p>
+</header>
 
-    <div class="sudoku-container">
-        <div id="sudoku-board"></div>
-        <button class="check-btn" onclick="checkSudoku()">Check Result</button>
+<!-- Sudoku Board -->
+<div class="sudoku-container">
+    <div id="sudoku-board"></div>
+    <button class="check-btn" onclick="checkSudoku()">Check Result</button>
+</div>
+
+<!-- Result Modal -->
+<div id="result-modal" class="overlay hidden">
+    <div class="result-box">
+        <h2 id="result-title"></h2>
+        <p id="final-time"></p>
+        <button onclick="closeResult()">Play Again</button>
     </div>
+</div>
 
-    <!-- Result Modal -->
-    <div id="result-modal" class="overlay hidden">
-        <div class="result-box">
-            <h2 id="result-title"></h2>
-            <p id="final-time"></p>
-            <button onclick="closeResult()">Play Again</button>
-        </div>
-    </div>
-
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
