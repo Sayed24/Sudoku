@@ -1,1 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sudoku Game</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
 
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="overlay">
+        <div class="welcome-box">
+            <h1>Welcome to Modern Sudoku</h1>
+            <p>Please enter your name to begin</p>
+            <input type="text" id="player-name-input" placeholder="Your name..." />
+            <button onclick="startGame()">Start Game</button>
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <header>
+        <h2>Created by: <span class="creator-name">Sayedrahim Sadat</span></h2>
+        <h1>Welcome, <span id="player-name"></span>!</h1>
+    </header>
+
+    <div class="sudoku-container">
+        <div id="sudoku-board"></div>
+        <button class="check-btn" onclick="checkSudoku()">Check Result</button>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="result-modal" class="overlay">
+        <div class="result-box">
+            <h2 id="result-title"></h2>
+            <button onclick="closeResult()">Play Again</button>
+        </div>
+    </div>
+
+<script src="script.js"></script>
+</body>
+</html>
