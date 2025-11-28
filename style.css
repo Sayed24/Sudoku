@@ -1,109 +1,140 @@
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #eef1f7;
-    display: flex;
-    justify-content: center;
-    padding-top: 20px;
+/* Basic layout */
+:root{
+  --board-size: 450px;
+  --cell-size: 50px;
 }
 
-.header {
-    text-align: center;
-    margin-bottom: 20px;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg,#f0f4fb,#e8eef7);
+  color:#223;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px;
+  min-height:100vh;
 }
 
-.creator {
-    color: #555;
-    margin-top: -10px;
+/* Header */
+.header{ text-align:center; margin-bottom:12px; }
+.creator{ color:#4b5563; margin-top:4px; font-size:0.95rem; }
+.player{ font-weight:600; color:#0f172a; margin:6px 0 0; }
+.timer{ color:#ef4444; font-weight:600; margin:4px 0 12px; }
+
+/* Game container */
+.game-container{ width:var(--board-size); max-width:95vw; text-align:center; }
+
+table{
+  width:100%;
+  max-width:var(--board-size);
+  height:auto;
+  border-collapse:collapse;
+  margin:0 auto 14px;
+  background: #222; /* thin outer frame */
+  padding:3px;
+  border-radius:10px;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.08);
 }
 
-.game-container {
-    text-align: center;
+/* Make each cell a fixed square using CSS variable */
+td{
+  width: calc((100% - 8px) / 9); /* fallback sizing */
+  padding:0;
+  background:white;
+  border: 1px solid #c1c7d0;
+  height: var(--cell-size);
+  text-align:center;
 }
 
-table {
-    border-collapse: collapse;
-    margin: 0 auto;
+/* Input inside cell */
+td input{
+  width:100%;
+  height:100%;
+  border:none;
+  text-align:center;
+  font-size:1.2rem;
+  font-weight:600;
+  outline:none;
+  background:transparent;
+  -moz-appearance:textfield;
 }
 
-td {
-    width: 50px;
-    height: 50px;
-    border: 1px solid #999;
-    text-align: center;
-    font-size: 20px;
-    background: white;
+/* focus */
+td input:focus{ background:#fbfbef; box-shadow:0 0 0 3px rgba(99,102,241,0.08); }
+
+/* Bold 3x3 borders
+   Approach: use nth-child on rows and columns so visual block borders are thicker */
+tr td { /* default thin border already set */ }
+
+/* vertical thick lines after col 3 and 6 and edges */
+td:nth-child(3), td:nth-child(6) { border-right: 3px solid #111827; }
+td:nth-child(1) { border-left: 3px solid #111827; }
+td:nth-child(9) { border-right: 3px solid #111827; }
+
+/* horizontal thick lines after row 3 and 6 and edges */
+tr:nth-child(3) td { border-bottom: 3px solid #111827; }
+tr:nth-child(6) td { border-bottom: 3px solid #111827; }
+tr:nth-child(1) td { border-top: 3px solid #111827; }
+tr:nth-child(9) td { border-bottom: 3px solid #111827; }
+
+/* Controls */
+.controls{ display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-top:6px; }
+button{
+  padding:10px 16px;
+  background:#2563eb;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  box-shadow: 0 6px 14px rgba(37,99,235,0.12);
+}
+button:hover{ transform:translateY(-2px); }
+
+/* Overlay screens */
+.overlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: rgba(2,6,23,0.45);
+  z-index:100;
 }
 
-td input {
-    width: 90%;
-    height: 90%;
-    text-align: center;
-    border: none;
-    font-size: 20px;
-    outline: none;
-    background: none;
+/* Hide by default when .hidden present */
+.hidden{ display:none !important; }
+
+.welcome-box, .result-box{
+  background:white;
+  padding:22px;
+  border-radius:12px;
+  width:320px;
+  max-width:94%;
+  text-align:center;
+  box-shadow: 0 12px 30px rgba(2,6,23,0.18);
 }
 
-td input:focus {
-    background: #e0f0ff;
+.welcome-box input{
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #d1d5db;
+  font-size:1rem;
 }
 
-/* --- BOLD 3x3 BORDERS --- */
-td {
-    border: 1px solid #999;
-}
+/* small row for difficulty */
+.row{ display:flex; gap:8px; align-items:center; justify-content:center; margin:8px 0; }
+.row select{ padding:8px; border-radius:8px; border:1px solid #cbd5e1; }
 
-/* Vertical bold borders */
-td:nth-child(1) { border-left: 4px solid black; }
-td:nth-child(3) { border-right: 4px solid black; }
-td:nth-child(4) { border-left: 1px solid #999; }
-td:nth-child(6) { border-right: 4px solid black; }
-td:nth-child(9) { border-right: 4px solid black; }
+/* results */
+.result-actions{ display:flex; gap:10px; justify-content:center; margin-top:12px; }
 
-/* Horizontal bold borders */
-tr:nth-child(1) td { border-top: 4px solid black; }
-tr:nth-child(3) td { border-bottom: 4px solid black; }
-tr:nth-child(6) td { border-bottom: 4px solid black; }
-tr:nth-child(9) td { border-bottom: 4px solid black; }
-
-/* Buttons */
-button {
-    padding: 10px 20px;
-    margin: 10px;
-    border: none;
-    font-size: 18px;
-    border-radius: 6px;
-    cursor: pointer;
-    background: #4a74ff;
-    color: white;
-}
-
-button:hover {
-    background: #2b52d6;
-}
-
-/* Overlays */
-.overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.welcome-box, .result-box {
-    background: white;
-    padding: 30px;
-    border-radius: 10px;
-    width: 300px;
-    text-align: center;
-    animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to   { opacity: 1; transform: translateY(0); }
+/* Responsive */
+@media (max-width:480px){
+  :root{ --cell-size:44px; --board-size:340px; }
+  .welcome-box, .result-box{ width:92%; padding:16px; }
 }
