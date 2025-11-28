@@ -1,44 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta nameviewport="width=device-width, initial-scale=1.0">
-    <title>Sudoku Game</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sudoku Game</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <div id="welcomeScreen" class="overlay">
-        <div class="welcome-box">
-            <h2>Welcome to the Sudoku Game</h2>
-            <p>Please enter your name to start playing:</p>
-            <input type="text" id="playerNameInput" placeholder="Your Name">
-            <button onclick="startGame()">OK</button>
-        </div>
+  <!-- Welcome Screen -->
+  <div id="welcomeScreen" class="overlay">
+    <div class="welcome-box">
+      <h2>Welcome to Modern Sudoku</h2>
+      <p>Enter your name to start:</p>
+      <input id="playerNameInput" type="text" placeholder="Your name" />
+      <div class="row">
+        <label for="difficulty">Difficulty:</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <button onclick="startGame()">Start Game</button>
     </div>
+  </div>
 
-    <div class="header">
-        <h1>Sudoku Game</h1>
-        <p class="creator">Created by: <strong>Sayedrahim Sadat</strong></p>
-        <p id="playerNameDisplay"></p>
+  <!-- Header -->
+  <header class="header">
+    <h1>Sudoku</h1>
+    <p class="creator">Created by: <strong>Sayedrahim Sadat</strong></p>
+    <p id="playerNameDisplay" class="player"></p>
+    <p id="timerDisplay" class="timer">Time: 00:00</p>
+  </header>
+
+  <!-- Game area -->
+  <main class="game-container">
+    <table id="sudokuBoard" aria-label="Sudoku board"></table>
+
+    <div class="controls">
+      <button onclick="checkSudoku()">Check</button>
+      <button onclick="giveHint()">Hint</button>
+      <button onclick="resetPuzzle()">Reset</button>
     </div>
+  </main>
 
-    <div class="game-container">
-        <table id="sudokuBoard"></table>
-
-        <div class="controls">
-            <button onclick="checkSudoku()">Check Result</button>
-            <button onclick="giveHint()">Hint</button>
-            <button onclick="resetGame()">Reset</button>
-        </div>
+  <!-- Result popup (hidden initially) -->
+  <div id="resultPopup" class="overlay hidden">
+    <div class="result-box">
+      <h2 id="resultMessage"></h2>
+      <p id="resultTime"></p>
+      <div class="result-actions">
+        <button onclick="playAgain()">Play Again</button>
+        <button onclick="closeResult()">Close</button>
+      </div>
     </div>
-
-    <div id="resultPopup" class="overlay">
-        <div class="result-box">
-            <h2 id="resultMessage"></h2>
-            <button onclick="playAgain()">Play Again</button>
-        </div>
-    </div>
+  </div>
 
 <script src="script.js"></script>
 </body>
