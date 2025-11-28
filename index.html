@@ -3,42 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sudoku Game</title>
+    <title>Modern Sudoku</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<!-- Welcome Screen -->
 <div id="welcome-screen" class="overlay">
     <div class="welcome-box">
-        <h2>Welcome to Sudoku</h2>
-        <p>Please enter your name to begin:</p>
+        <h2>Welcome to Modern Sudoku</h2>
+        <p>Enter your name to start:</p>
         <input type="text" id="playerName" placeholder="Your name">
+        <div class="row">
+            <label for="difficulty">Difficulty:</label>
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
         <button id="startBtn">Start Game</button>
     </div>
 </div>
 
+<!-- Header -->
 <header>
-    <h1>Sudoku Game</h1>
+    <h1>Modern Sudoku</h1>
     <h3 id="creator">Created by: Sayedrahim Sadat</h3>
     <h3 id="greeting"></h3>
+    <p id="timer">Time: 00:00</p>
 </header>
 
+<!-- Controls -->
 <div class="controls">
     <button id="hintBtn">Hint</button>
+    <button id="toggleThemeBtn">Toggle Dark/Light</button>
 </div>
 
+<!-- Game Board -->
 <div id="game-container">
     <table id="sudoku-board"></table>
 </div>
 
+<!-- Result Screen -->
 <div id="result-screen" class="overlay">
     <div class="result-box">
         <h2 id="result-message"></h2>
+        <p id="result-time"></p>
         <button id="playAgainBtn">Play Again</button>
     </div>
 </div>
 
-<script src="script.js"></script>
+<!-- Audio -->
+<audio id="correct-sound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+<audio id="wrong-sound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+<audio id="win-sound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
 
+<script src="script.js"></script>
 </body>
 </html>
