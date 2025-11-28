@@ -14,6 +14,12 @@
             <h1>Welcome to Modern Sudoku</h1>
             <p>Please enter your name to begin</p>
             <input type="text" id="player-name-input" placeholder="Your name..." />
+            <label for="difficulty">Select Difficulty:</label>
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
             <button onclick="startGame()">Start Game</button>
         </div>
     </div>
@@ -22,6 +28,7 @@
     <header>
         <h2>Created by: <span class="creator-name">Sayedrahim Sadat</span></h2>
         <h1>Welcome, <span id="player-name"></span>!</h1>
+        <p>Time: <span id="timer">00:00</span></p>
     </header>
 
     <div class="sudoku-container">
@@ -33,6 +40,7 @@
     <div id="result-modal" class="overlay">
         <div class="result-box">
             <h2 id="result-title"></h2>
+            <p id="final-time"></p>
             <button onclick="closeResult()">Play Again</button>
         </div>
     </div>
