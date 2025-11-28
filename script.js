@@ -1,3 +1,22 @@
+// Sound effects
+let correctSound = new Audio('https://freesound.org/data/previews/522/522148_10277777-lq.mp3'); // optional: correct sound
+let wrongSound = new Audio('https://freesound.org/data/previews/170/170162_2437358-lq.mp3'); // optional: wrong sound
+let winSound = new Audio('https://freesound.org/data/previews/320/320655_5260877-lq.mp3'); // win
+
+// Confetti
+function launchConfetti() {
+    const duration = 3 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+
+    function frame() {
+        confetti({ ...defaults, particleCount: 5, origin: { x: Math.random(), y: Math.random() - 0.2 } });
+        if (Date.now() < animationEnd) requestAnimationFrame(frame);
+    }
+    frame();
+}
+
+// Predefined boards
 let sudokuBoards = {
     easy: [
         [5,3,null,null,7,null,null,null,null],
@@ -9,28 +28,6 @@ let sudokuBoards = {
         [null,6,null,null,null,null,2,8,null],
         [null,null,null,4,1,9,null,null,5],
         [null,null,null,null,8,null,null,7,9],
-    ],
-    medium: [
-        [null,2,null,6,null,8,null,null,null],
-        [5,8,null,null,9,null,2,null,null],
-        [null,null,null,null,4,null,null,null,null],
-        [3,null,null,null,null,null,null,1,null],
-        [null,null,1,null,null,null,7,null,null],
-        [null,6,null,null,null,null,null,null,9],
-        [null,null,null,null,1,null,null,null,null],
-        [null,null,4,null,6,null,null,2,1],
-        [null,null,null,2,null,9,null,5,null]
-    ],
-    hard: [
-        [null,null,5,3,null,null,null,null,null],
-        [8,null,null,null,null,null,null,2,null],
-        [null,7,null,null,1,null,5,null,null],
-        [4,null,null,null,null,5,3,null,null],
-        [null,1,null,null,7,null,null,null,6],
-        [null,null,3,2,null,null,null,8,null],
-        [null,6,null,5,null,null,null,null,9],
-        [null,null,4,null,null,null,null,3,null],
-        [null,null,null,null,null,9,7,null,null]
     ]
 };
 
@@ -42,24 +39,27 @@ function startTimer() {
     timerInterval = setInterval(() => {
         seconds++;
         const mins = String(Math.floor(seconds/60)).padStart(2,'0');
-        const secs = String(seconds % 60).padStart(2,'0');
+        const secs = String(seconds%60).padStart(2,'0');
         document.getElementById("timer").textContent = `${mins}:${secs}`;
     }, 1000);
 }
 
-// Start Game
+// Game variables
 let sudokuBoard, solution;
 
+// Start Game
 function startGame() {
     const name = document.getElementById("player-name-input").value.trim();
     if(!name){ alert("Please enter your name!"); return; }
 
     document.getElementById("player-name").textContent = name;
     const difficulty = document.getElementById("difficulty").value;
-    sudokuBoard = JSON.parse(JSON.stringify(sudokuBoards[difficulty]));
-    solution = generateSolution(difficulty);
+
+    sudokuBoard = JSON.parse(JSON.stringify(sudokuBoards.easy)); // for demo only
+    solution = generateSolution();
 
     document.getElementById("welcome-screen").style.display = "none";
+    document.getElementById("result-modal").classList.add("hidden");
     generateBoard();
     seconds = 0;
     startTimer();
@@ -74,6 +74,8 @@ function generateBoard(){
             let cell = document.createElement("input");
             cell.maxLength=1;
             cell.classList.add("cell");
+            cell.dataset.row = r;
+            cell.dataset.col = c;
             if(sudokuBoard[r][c]!==null){
                 cell.value=sudokuBoard[r][c];
                 cell.disabled=true;
@@ -87,7 +89,7 @@ function generateBoard(){
 // Check Sudoku
 function checkSudoku(){
     const cells = document.querySelectorAll(".cell");
-    let index = 0, correct=true;
+    let index=0, correct=true;
     for(let r=0;r<9;r++){
         for(let c=0;c<9;c++){
             let value = cells[index].value;
@@ -106,66 +108,41 @@ function checkSudoku(){
 // Show Result
 function showResult(correct){
     clearInterval(timerInterval);
-    const resultBox = document.getElementById("result-modal");
-    const resultTitle = document.getElementById("result-title");
-    const finalTime = document.getElementById("final-time");
-    const playerName = document.getElementById("player-name").textContent;
+    const resultBox=document.getElementById("result-modal");
+    const resultTitle=document.getElementById("result-title");
+    const finalTime=document.getElementById("final-time");
+    const playerName=document.getElementById("player-name").textContent;
 
-    finalTime.textContent = `Your time: ${document.getElementById("timer").textContent}`;
+    finalTime.textContent=`Your time: ${document.getElementById("timer").textContent}`;
 
     if(correct){
-        resultTitle.textContent = `Congratulations, ${playerName}! You solved it!`;
+        resultTitle.textContent=`Congratulations, ${playerName}! You solved it!`;
         resultTitle.className="result-success";
+        winSound.play();
+        launchConfetti();
     }else{
-        resultTitle.textContent = `Sorry ${playerName}, the puzzle is not correct.`;
+        resultTitle.textContent=`Sorry ${playerName}, the puzzle is not correct.`;
         resultTitle.className="result-fail";
+        wrongSound.play();
     }
 
-    resultBox.style.display="flex";
+    resultBox.classList.remove("hidden");
 }
 
-// Close Result and Restart
+// Close Result
 function closeResult(){ window.location.reload(); }
 
-// Generate Solution (simple pre-set solutions for demo)
-function generateSolution(difficulty){
-    if(difficulty=="easy"){
-        return [
-            [5,3,4,6,7,8,9,1,2],
-            [6,7,2,1,9,5,3,4,8],
-            [1,9,8,3,4,2,5,6,7],
-            [8,5,9,7,6,1,4,2,3],
-            [4,2,6,8,5,3,7,9,1],
-            [7,1,3,9,2,4,8,5,6],
-            [9,6,1,5,3,7,2,8,4],
-            [2,8,7,4,1,9,6,3,5],
-            [3,4,5,2,8,6,1,7,9],
-        ];
-    }
-    if(difficulty=="medium"){
-        return [
-            [1,2,3,6,7,8,9,4,5],
-            [5,8,9,1,9,4,2,3,7],
-            [6,4,7,3,4,2,1,5,8],
-            [3,5,2,7,8,6,4,1,9],
-            [4,9,1,5,2,3,7,8,6],
-            [7,6,8,9,1,4,5,2,3],
-            [2,3,5,4,1,7,6,9,8],
-            [9,7,4,8,6,5,3,2,1],
-            [8,1,6,2,3,9,4,7,5],
-        ];
-    }
-    if(difficulty=="hard"){
-        return [
-            [1,4,5,3,2,7,6,9,8],
-            [8,3,9,6,5,4,1,2,7],
-            [2,7,6,9,1,8,5,4,3],
-            [4,8,1,7,9,5,3,6,2],
-            [9,1,2,4,7,3,8,5,6],
-            [5,6,3,2,8,1,7,8,9],
-            [7,6,8,5,3,2,4,1,9],
-            [6,9,4,1,4,6,2,3,5],
-            [3,2,7,8,6,9,7,5,1],
-        ];
-    }
+// Generate Solution (fixed for demo)
+function generateSolution(){
+    return [
+        [5,3,4,6,7,8,9,1,2],
+        [6,7,2,1,9,5,3,4,8],
+        [1,9,8,3,4,2,5,6,7],
+        [8,5,9,7,6,1,4,2,3],
+        [4,2,6,8,5,3,7,9,1],
+        [7,1,3,9,2,4,8,5,6],
+        [9,6,1,5,3,7,2,8,4],
+        [2,8,7,4,1,9,6,3,5],
+        [3,4,5,2,8,6,1,7,9]
+    ];
 }
