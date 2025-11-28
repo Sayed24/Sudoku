@@ -8,45 +8,38 @@
 </head>
 <body>
 
-<!-- Welcome Screen -->
-<div id="welcome-screen" class="overlay">
-    <div class="welcome-box">
-        <h1>Welcome to Modern Sudoku</h1>
-        <p>Please enter your name to begin</p>
-        <input type="text" id="player-name-input" placeholder="Your name..." />
-        <label for="difficulty">Select Difficulty:</label>
-        <select id="difficulty">
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
-        </select>
-        <button onclick="startGame()">Start Game</button>
+    <div id="welcomeScreen" class="overlay">
+        <div class="welcome-box">
+            <h2>Welcome to the Sudoku Game</h2>
+            <p>Please enter your name to start playing:</p>
+            <input type="text" id="playerNameInput" placeholder="Your Name">
+            <button onclick="startGame()">OK</button>
+        </div>
     </div>
-</div>
 
-<!-- Game Header -->
-<header>
-    <h2>Created by: <span class="creator-name">Sayedrahim Sadat</span></h2>
-    <h1>Welcome, <span id="player-name"></span>!</h1>
-    <p>Time: <span id="timer">00:00</span> | <button onclick="giveHint()">Hint</button></p>
-</header>
-
-<!-- Sudoku Board -->
-<div class="sudoku-container">
-    <div id="sudoku-board"></div>
-    <button class="check-btn" onclick="checkSudoku()">Check Result</button>
-</div>
-
-<!-- Result Modal -->
-<div id="result-modal" class="overlay hidden">
-    <div class="result-box">
-        <h2 id="result-title"></h2>
-        <p id="final-time"></p>
-        <button onclick="closeResult()">Play Again</button>
+    <div class="header">
+        <h1>Sudoku Game</h1>
+        <p class="creator">Created by: <strong>Sayedrahim Sadat</strong></p>
+        <p id="playerNameDisplay"></p>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <div class="game-container">
+        <table id="sudokuBoard"></table>
+
+        <div class="controls">
+            <button onclick="checkSudoku()">Check Result</button>
+            <button onclick="giveHint()">Hint</button>
+            <button onclick="resetGame()">Reset</button>
+        </div>
+    </div>
+
+    <div id="resultPopup" class="overlay">
+        <div class="result-box">
+            <h2 id="resultMessage"></h2>
+            <button onclick="playAgain()">Play Again</button>
+        </div>
+    </div>
+
 <script src="script.js"></script>
 </body>
 </html>
