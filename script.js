@@ -1,113 +1,229 @@
-let solution = [
-    [5,3,4,6,7,8,9,1,2],
-    [6,7,2,1,9,5,3,4,8],
-    [1,9,8,3,4,2,5,6,7],
-    [8,5,9,7,6,1,4,2,3],
-    [4,2,6,8,5,3,7,9,1],
-    [7,1,3,9,2,4,8,5,6],
-    [9,6,1,5,3,7,2,8,4],
-    [2,8,7,4,1,9,6,3,5],
-    [3,4,5,2,8,6,1,7,9]
+/* Sudoku game - complete working version
+   - hidden result modal by default
+   - hint, check, reset, play again
+   - digits-only input enforcement
+   - bold 3x3 borders
+   - simple timer
+*/
+
+/* ------- Utilities & initial solution/puzzles ------- */
+
+/* A base valid solved grid (used as solution template in this simple implementation).
+   In a production app you'd use a proper generator/solver to create many unique puzzles.
+*/
+const baseSolution = [
+  [5,3,4,6,7,8,9,1,2],
+  [6,7,2,1,9,5,3,4,8],
+  [1,9,8,3,4,2,5,6,7],
+  [8,5,9,7,6,1,4,2,3],
+  [4,2,6,8,5,3,7,9,1],
+  [7,1,3,9,2,4,8,5,6],
+  [9,6,1,5,3,7,2,8,4],
+  [2,8,7,4,1,9,6,3,5],
+  [3,4,5,2,8,6,1,7,9]
 ];
 
-// Clone solution to puzzle
-let puzzle = solution.map(row => row.slice());
+/* Deep copy helper */
+function deepCopyGrid(g){ return g.map(r => r.slice()); }
 
-// Remove 55 random cells
-for (let i = 0; i < 55; i++) {
-    let r = Math.floor(Math.random() * 9);
-    let c = Math.floor(Math.random() * 9);
-    puzzle[r][c] = "";
+/* Remove N cells randomly from a solution to make a puzzle */
+function makePuzzleFromSolution(sol, removeCount){
+  const puzzle = deepCopyGrid(sol);
+  let removed = 0;
+  while(removed < removeCount){
+    const r = Math.floor(Math.random()*9);
+    const c = Math.floor(Math.random()*9);
+    if(puzzle[r][c] !== ""){ puzzle[r][c] = ""; removed++; }
+  }
+  return puzzle;
 }
 
-function renderBoard() {
-    const table = document.getElementById("sudokuBoard");
-    table.innerHTML = "";
+/* Difficulty -> how many cells to remove */
+function removeCountForDifficulty(d){
+  if(d === "easy") return 36;    // more filled
+  if(d === "medium") return 46;
+  return 54; // hard
+}
 
-    for (let r = 0; r < 9; r++) {
-        let row = document.createElement("tr");
+/* ------- Game state ------- */
+let solution = deepCopyGrid(baseSolution);
+let puzzle = [];
+let timerInterval = null;
+let elapsedSeconds = 0;
 
-        for (let c = 0; c < 9; c++) {
-            let cell = document.createElement("td");
+/* ------- Timer functions ------- */
+function startTimer(){
+  stopTimer();
+  elapsedSeconds = 0;
+  updateTimerDisplay();
+  timerInterval = setInterval(()=>{
+    elapsedSeconds++;
+    updateTimerDisplay();
+  }, 1000);
+}
+function stopTimer(){ if(timerInterval) { clearInterval(timerInterval); timerInterval = null; } }
+function updateTimerDisplay(){
+  const mm = String(Math.floor(elapsedSeconds/60)).padStart(2,'0');
+  const ss = String(elapsedSeconds%60).padStart(2,'0');
+  document.getElementById('timerDisplay').textContent = `Time: ${mm}:${ss}`;
+}
 
-            if (puzzle[r][c] === "") {
-                let input = document.createElement("input");
-                input.setAttribute("maxlength", 1);
-                cell.appendChild(input);
-            } else {
-                cell.textContent = puzzle[r][c];
-            }
+/* ------- Rendering the board ------- */
+function renderBoard(){
+  const table = document.getElementById('sudokuBoard');
+  table.innerHTML = '';
 
-            row.appendChild(cell);
-        }
+  for(let r=0; r<9; r++){
+    const tr = document.createElement('tr');
 
-        table.appendChild(row);
+    for(let c=0; c<9; c++){
+      const td = document.createElement('td');
+
+      // add data attributes for potential future use
+      td.dataset.row = r;
+      td.dataset.col = c;
+
+      if(puzzle[r][c] === ""){
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.inputMode = 'numeric';
+        input.maxLength = 1;
+        input.autocomplete = 'off';
+
+        // restrict to digits 1-9
+        input.addEventListener('input', (e) => {
+          const val = e.target.value.replace(/[^\d]/g,'').slice(0,1);
+          if(val === "0") { e.target.value = ""; return; } // disallow 0
+          e.target.value = val;
+        });
+
+        // keep puzzle cell empty initially
+        td.appendChild(input);
+      } else {
+        td.textContent = puzzle[r][c];
+        td.style.fontWeight = '700';
+        td.style.color = '#111827';
+      }
+
+      tr.appendChild(td);
     }
+
+    table.appendChild(tr);
+  }
 }
 
-function startGame() {
-    let name = document.getElementById("playerNameInput").value.trim();
+/* ------- Start / initialize game ------- */
+function startGame(){
+  const name = document.getElementById('playerNameInput').value.trim();
+  if(!name){ alert('Please enter your name'); return; }
 
-    if (name === "") return alert("Please enter your name!");
+  // set player display
+  document.getElementById('playerNameDisplay').textContent = `Player: ${name}`;
 
-    document.getElementById("welcomeScreen").style.display = "none";
-    document.getElementById("playerNameDisplay").textContent = "Player: " + name;
+  // difficulty
+  const diff = document.getElementById('difficulty').value || 'medium';
+  const removeCount = removeCountForDifficulty(diff);
 
-    renderBoard();
+  // create puzzle from base solution (simple approach)
+  puzzle = makePuzzleFromSolution(solution, removeCount);
+
+  // hide welcome, show board
+  document.getElementById('welcomeScreen').classList.add('hidden');
+  document.getElementById('resultPopup').classList.add('hidden');
+
+  // render board and start timer
+  renderBoard();
+  startTimer();
 }
 
-function checkSudoku() {
-    let inputs = document.querySelectorAll("td input");
-    let index = 0;
+/* ------- Check solution ------- */
+function checkSudoku(){
+  // gather inputs and compare with solution
+  const table = document.getElementById('sudokuBoard');
+  const inputs = table.querySelectorAll('input');
+  let inputIndex = 0;
 
-    for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
+  for(let r=0; r<9; r++){
+    for(let c=0; c<9; c++){
+      const expected = solution[r][c];
 
-            let value = puzzle[r][c] === "" ? inputs[index++].value : puzzle[r][c];
-
-            if (Number(value) !== solution[r][c]) {
-                showResult(false);
-                return;
-            }
+      if(puzzle[r][c] === "") {
+        const supplied = inputs[inputIndex].value.trim();
+        inputIndex++;
+        if(supplied === "" || Number(supplied) !== expected){
+          showResult(false);
+          return;
         }
+      } else {
+        // prefilled cell - already matches
+      }
     }
-    showResult(true);
+  }
+
+  // all matched
+  showResult(true);
 }
 
-function giveHint() {
-    let empties = [];
-
-    for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-            if (puzzle[r][c] === "") {
-                empties.push({ r, c });
-            }
-        }
+/* ------- Hint: fill one empty cell with correct number ------- */
+function giveHint(){
+  const empties = [];
+  for(let r=0;r<9;r++){
+    for(let c=0;c<9;c++){
+      if(puzzle[r][c] === "") empties.push({r,c});
     }
+  }
+  if(empties.length === 0){ alert('No empty cells to hint.'); return; }
 
-    if (empties.length === 0) return;
+  const pick = empties[Math.floor(Math.random()*empties.length)];
+  puzzle[pick.r][pick.c] = solution[pick.r][pick.c];
 
-    let random = empties[Math.floor(Math.random() * empties.length)];
-
-    puzzle[random.r][random.c] = solution[random.r][random.c];
-    renderBoard();
+  // re-render and keep timer running
+  renderBoard();
 }
 
-function showResult(success) {
-    let player = document.getElementById("playerNameDisplay").textContent.replace("Player: ", "");
-
-    let msg = success
-        ? `🎉 Congratulations ${player}, You Completed the Sudoku!`
-        : `❌ Sorry ${player}, Your Solution Is Incorrect.`;
-
-    document.getElementById("resultMessage").textContent = msg;
-    document.getElementById("resultPopup").style.display = "flex";
+/* ------- Reset & Play Again ------- */
+function resetPuzzle(){
+  // rebuild puzzle from solution using same difficulty
+  const diff = document.getElementById('difficulty').value || 'medium';
+  puzzle = makePuzzleFromSolution(solution, removeCountForDifficulty(diff));
+  renderBoard();
+  elapsedSeconds = 0;
+  updateTimerDisplay();
 }
 
-function playAgain() {
-    window.location.reload();
+function playAgain(){
+  // restart fresh: re-show welcome screen
+  document.getElementById('welcomeScreen').classList.remove('hidden');
+  document.getElementById('resultPopup').classList.add('hidden');
+  stopTimer();
+  elapsedSeconds = 0;
+  updateTimerDisplay();
+  document.getElementById('playerNameInput').value = '';
+  document.getElementById('playerNameDisplay').textContent = '';
+  puzzle = [];
+  const table = document.getElementById('sudokuBoard'); table.innerHTML = '';
 }
 
-function resetGame() {
-    window.location.reload();
+function closeResult(){
+  // just close the result modal and allow editing (do not reload)
+  document.getElementById('resultPopup').classList.add('hidden');
 }
+
+/* ------- Show result modal ------- */
+function showResult(success){
+  stopTimer();
+  const msg = success ? '🎉 Congratulations — You solved it!' : '❌ Not correct. Keep trying!';
+  document.getElementById('resultMessage').textContent = msg;
+  const mm = String(Math.floor(elapsedSeconds/60)).padStart(2,'0');
+  const ss = String(elapsedSeconds%60).padStart(2,'0');
+  document.getElementById('resultTime').textContent = `Time: ${mm}:${ss}`;
+  document.getElementById('resultPopup').classList.remove('hidden');
+}
+
+/* ------- Initialize page default state ------- */
+(function init(){
+  // start with welcome screen visible and result hidden
+  document.getElementById('welcomeScreen').classList.remove('hidden');
+  document.getElementById('resultPopup').classList.add('hidden');
+  updateTimerDisplay();
+})();
