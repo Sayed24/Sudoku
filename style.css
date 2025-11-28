@@ -49,34 +49,23 @@ td input:focus {
     background: #e0f0ff;
 }
 
-/* 🔥 REAL BOLD 3×3 BORDERS */
+/* --- BOLD 3x3 BORDERS --- */
 td {
     border: 1px solid #999;
 }
 
-td:nth-child(3), td:nth-child(6) {
-    border-right: 4px solid black;
-}
+/* Vertical bold borders */
+td:nth-child(1) { border-left: 4px solid black; }
+td:nth-child(3) { border-right: 4px solid black; }
+td:nth-child(4) { border-left: 1px solid #999; }
+td:nth-child(6) { border-right: 4px solid black; }
+td:nth-child(9) { border-right: 4px solid black; }
 
-tr:nth-child(3) td, tr:nth-child(6) td {
-    border-bottom: 4px solid black;
-}
-
-td:nth-child(1) {
-    border-left: 4px solid black;
-}
-
-td:nth-child(9) {
-    border-right: 4px solid black;
-}
-
-tr:nth-child(1) td {
-    border-top: 4px solid black;
-}
-
-tr:nth-child(9) td {
-    border-bottom: 4px solid black;
-}
+/* Horizontal bold borders */
+tr:nth-child(1) td { border-top: 4px solid black; }
+tr:nth-child(3) td { border-bottom: 4px solid black; }
+tr:nth-child(6) td { border-bottom: 4px solid black; }
+tr:nth-child(9) td { border-bottom: 4px solid black; }
 
 /* Buttons */
 button {
@@ -94,7 +83,7 @@ button:hover {
     background: #2b52d6;
 }
 
-/* Overlay Screens */
+/* Overlays */
 .overlay {
     position: fixed;
     top: 0; left: 0;
