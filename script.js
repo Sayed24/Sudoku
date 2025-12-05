@@ -1,14 +1,15 @@
-/* Modern Sudoku complete script
-   - fixed layout, centered numbers
-   - timer, difficulty
-   - hint, undo/redo, reset, check
-   - correct glow + confetti on win
-   - shake animation & message on fail
-   - loading overlay hides reliably
-   - dark/light toggle (always visible)
+/* Modern Sudoku - full features
+   - Very Easy / Easy / Medium / Hard difficulties
+   - Fixed-size board, center-aligned numbers
+   - Undo / Redo with move history and mini-dot timeline
+   - Hint, Reset, Check, Timer
+   - Confetti + glow on success, shake on failure
+   - Floating 3D undo/redo buttons (Style C)
+   - Light/Dark toggle always visible
+   - Loading overlay hides reliably
 */
 
-/* ---------- Base completed solution ---------- */
+/* ---------- Base solved grid (valid) ---------- */
 const BASE_SOLUTION = [
   [5,3,4,6,7,8,9,1,2],
   [6,7,2,1,9,5,3,4,8],
@@ -21,34 +22,38 @@ const BASE_SOLUTION = [
   [3,4,5,2,8,6,1,7,9]
 ];
 
-/* ---------- DOM elements ---------- */
+/* ---------- DOM ---------- */
 const loadingOverlay = document.getElementById('loadingOverlay');
-const welcomeScreen = document.getElementById('welcome-screen');
+const welcomeScreen = document.getElementById('welcomeScreen');
 const playerNameInput = document.getElementById('playerName');
 const difficultySelect = document.getElementById('difficulty');
 const startBtn = document.getElementById('startBtn');
-const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+const themeToggleStart = document.getElementById('themeToggleStart');
 const themeToggleFixed = document.getElementById('themeToggleFixed');
 
 const greeting = document.getElementById('greeting');
 const timerEl = document.getElementById('timer');
-const boardTable = document.getElementById('sudoku-board');
 
-const undoBtn = document.getElementById('undoBtn');
-const redoBtn = document.getElementById('redoBtn');
+const sudokuBoard = document.getElementById('sudokuBoard');
+const gameContainer = document.getElementById('gameContainer');
+
 const hintBtn = document.getElementById('hintBtn');
 const checkBtn = document.getElementById('checkBtn');
 const resetBtn = document.getElementById('resetBtn');
 
-const resultScreen = document.getElementById('result-screen');
-const resultMessage = document.getElementById('result-message');
-const resultTime = document.getElementById('result-time');
+const undoBtn = document.getElementById('undoBtn');
+const redoBtn = document.getElementById('redoBtn');
+const historyBar = document.getElementById('historyBar');
+
+const resultScreen = document.getElementById('resultScreen');
+const resultTitle = document.getElementById('resultTitle');
+const resultTime = document.getElementById('resultTime');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const closeResultBtn = document.getElementById('closeResultBtn');
 
-const soundInput = document.getElementById('sound-input');
-const soundWrong = document.getElementById('sound-wrong');
-const soundWin = document.getElementById('sound-win');
+const soundInput = document.getElementById('soundInput');
+const soundWrong = document.getElementById('soundWrong');
+const soundWin = document.getElementById('soundWin');
 
 /* ---------- State ---------- */
 let solution = [];
@@ -57,15 +62,20 @@ let playerName = '';
 let timerInterval = null;
 let elapsed = 0;
 
-/* For undo/redo: stacks of moves
-   move = { r, c, from, to, type }  // type: 'input'|'hint'
-*/
+/* Moves stacks for undo/redo + history array */
 let undoStack = [];
 let redoStack = [];
+let history = []; // each move has {r,c,from,to,type,moveIdx}
 
 /* ---------- Helpers ---------- */
-function deepCopy(grid){ return grid.map(r => r.slice()); }
-function removeCellsFrom(sol, removeCount){
+const deepCopy = g => g.map(r => r.slice());
+function removeCountForDiff(d){
+  if(d==='veryeasy') return 30; // very easy: keep many numbers
+  if(d==='easy') return 36;
+  if(d==='medium') return 46;
+  return 54; // hard
+}
+function makePuzzleFromSolution(sol,removeCount){
   const p = deepCopy(sol);
   let removed = 0;
   while(removed < removeCount){
@@ -78,25 +88,19 @@ function removeCellsFrom(sol, removeCount){
   }
   return p;
 }
-function removeCountForDifficulty(d){
-  if(d==='easy') return 36;
-  if(d==='medium') return 46;
-  return 54;
-}
 
-/* ---------- Loading overlay hide reliably ---------- */
+/* ---------- Loading overlay: hide reliably ---------- */
 window.addEventListener('load', () => {
-  // Ensure loading overlay is removed after small delay
   setTimeout(()=> {
-    if(loadingOverlay) loadingOverlay.style.display='none';
-    // ensure welcome screen visible (if not started)
-    if(welcomeScreen) welcomeScreen.style.display='flex';
-  }, 300);
+    if(loadingOverlay) loadingOverlay.style.display = 'none';
+    // show welcome if not started
+    if(welcomeScreen) welcomeScreen.style.display = 'flex';
+  }, 250);
 });
 
 /* ---------- Timer ---------- */
 function startTimer(){
-  stopTimer();
+  clearInterval(timerInterval);
   elapsed = 0;
   timerEl.textContent = 'Time: 00:00';
   timerInterval = setInterval(()=>{
@@ -106,21 +110,21 @@ function startTimer(){
     timerEl.textContent = `Time: ${mm}:${ss}`;
   },1000);
 }
-function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
+function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval = null; } }
 
-/* ---------- Render fixed-size board ---------- */
+/* ---------- Render board (fixed layout) ---------- */
 function renderBoard(){
-  boardTable.innerHTML = '';
+  sudokuBoard.innerHTML = '';
   for(let r=0;r<9;r++){
     const tr = document.createElement('tr');
     for(let c=0;c<9;c++){
       const td = document.createElement('td');
 
-      // block borders (thicker)
-      if(r%3===0) td.style.borderTopWidth='2px';
-      if(c%3===0) td.style.borderLeftWidth='2px';
-      if(r===8) td.style.borderBottomWidth='2px';
-      if(c===8) td.style.borderRightWidth='2px';
+      // thicker block borders
+      if(r%3===0) td.style.borderTopWidth = '2px';
+      if(c%3===0) td.style.borderLeftWidth = '2px';
+      if(r===8) td.style.borderBottomWidth = '2px';
+      if(c===8) td.style.borderRightWidth = '2px';
 
       const val = puzzle[r][c];
       if(val === ""){
@@ -130,36 +134,27 @@ function renderBoard(){
         inp.inputMode = 'numeric';
         inp.autocomplete = 'off';
 
-        // value enforcement and move recording
+        // local index to help commit
         inp.addEventListener('input', (e) => {
+          // allow digits 1-9 only
           let v = e.target.value.replace(/[^\d]/g,'').slice(0,1);
           if(v === '0') v = '';
           e.target.value = v;
-
-          // record move (from previous cell value to new)
-          // Find current puzzle state for this cell (we use index mapping)
+          // play small input sound (optional)
+          if(soundInput && e.target.value) soundInput.currentTime = 0, soundInput.play();
         });
 
-        // handle blur to commit move: easier to track moves on blur/enter
+        // commit on blur
         inp.addEventListener('blur', (e) => {
-          commitInputValue(r,c,e.target.value);
+          commitInput(r,c,e.target.value.trim());
         });
 
-        // also handle Enter to commit and move focus
+        // handle Enter and arrows
         inp.addEventListener('keydown', (e) => {
-          if(e.key === 'Enter'){
-            e.preventDefault();
-            inp.blur();
-          }
-          // allow arrow navigation
-          const arrowKeys = ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
-          if(arrowKeys.includes(e.key)){
-            e.preventDefault();
-            navigateFrom(r,c,e.key);
-          }
-          // Ctrl+Z / Ctrl+Y for undo/redo
-          if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'){ undoMove(); }
-          if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y'){ redoMove(); }
+          if(e.key === 'Enter'){ e.preventDefault(); inp.blur(); }
+          if(e.key.startsWith('Arrow')){ e.preventDefault(); moveFocusByKey(r,c,e.key); }
+          if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='z'){ e.preventDefault(); undoMove(); }
+          if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='y'){ e.preventDefault(); redoMove(); }
         });
 
         td.appendChild(inp);
@@ -167,62 +162,52 @@ function renderBoard(){
         td.textContent = val;
         td.classList.add('prefilled');
       }
-
       tr.appendChild(td);
     }
-    boardTable.appendChild(tr);
+    sudokuBoard.appendChild(tr);
   }
+  // update history bar visuals
+  renderHistoryBar();
 }
 
-/* ---------- Commit input value to puzzle and push undo move ---------- */
-function commitInputValue(r,c,newVal){
-  // find inputs NodeList index mapping to grid position
-  // But simpler: read the value from DOM for that cell and compare to puzzle
-  const cell = boardTable.rows[r].cells[c];
-  const input = cell.querySelector('input');
-  const from = puzzle[r][c] === "" ? "" : puzzle[r][c];
-  const to = input ? input.value.trim() : (puzzle[r][c] || '');
+/* ---------- Commit input and record move ---------- */
+function commitInput(r,c,value){
+  const prev = puzzle[r][c] === "" ? "" : String(puzzle[r][c]);
+  const newVal = value === "" ? "" : String(value);
 
-  // If user cleared value -> to == ''
-  // Only record if changed relative to the underlying puzzle (pre-filled are not inputs)
-  // Underlying puzzle may be "" if empty cell
-  const prevDisplayed = from === "" ? "" : String(from);
+  // if no change -> do nothing
+  if(prev === newVal) return;
 
-  if(to === prevDisplayed) {
-    // nothing changed (or re-typed same)
-    return;
-  }
+  // update puzzle so checks work easily
+  puzzle[r][c] = newVal === "" ? "" : Number(newVal);
 
-  // Update puzzle data -> For user typed numbers we keep puzzle as "" (we only store prefilled in puzzle),
-  // but to simplify undo/redo, we'll maintain a separate "userEntries" structure or write entered number into puzzle for checking convenience.
-  // We'll store user entries into puzzle (but mark prefilled with separate array).
-  puzzle[r][c] = to === "" ? "" : Number(to);
-
-  // push move
-  undoStack.push({r,c,from: prevDisplayed, to: to === "" ? "" : String(to), type:'input'});
-  // clear redo
+  // record move
+  const move = { r, c, from: prev, to: newVal, type: 'input' };
+  undoStack.push(move);
   redoStack = [];
-  updateUndoRedoButtons();
+  history.push(move);
+  renderHistoryBar();
 }
 
-/* ---------- Navigate with arrows ---------- */
-function navigateFrom(r,c,key){
+/* ---------- Move focus with arrows ---------- */
+function moveFocusByKey(r,c,key){
   let nr=r, nc=c;
   if(key === 'ArrowUp') nr = Math.max(0,r-1);
   if(key === 'ArrowDown') nr = Math.min(8,r+1);
   if(key === 'ArrowLeft') nc = Math.max(0,c-1);
   if(key === 'ArrowRight') nc = Math.min(8,c+1);
-  const nextCell = boardTable.rows[nr].cells[nc];
-  if(nextCell){
-    const input = nextCell.querySelector('input');
+  const next = sudokuBoard.rows[nr].cells[nc];
+  if(next){
+    const input = next.querySelector('input');
     if(input){ input.focus(); input.select(); }
   }
 }
 
-/* ---------- Undo / Redo logic ---------- */
+/* ---------- Undo / Redo moves ---------- */
 function updateUndoRedoButtons(){
   undoBtn.disabled = undoStack.length === 0;
   redoBtn.disabled = redoStack.length === 0;
+  renderHistoryBar();
 }
 
 function undoMove(){
@@ -230,17 +215,14 @@ function undoMove(){
   const move = undoStack.pop();
   // revert puzzle
   puzzle[move.r][move.c] = move.from === "" ? "" : (isNaN(move.from) ? move.from : Number(move.from));
-  // update DOM cell
-  const cell = boardTable.rows[move.r].cells[move.c];
+  // reflect in DOM
+  const cell = sudokuBoard.rows[move.r].cells[move.c];
   const input = cell.querySelector('input');
-  if(input){
-    input.value = move.from;
-  } else {
-    // was prefilled? shouldn't be in undo stack, but handle defensively
-    cell.textContent = move.from;
-  }
-  // push to redo
+  if(input) input.value = move.from;
+  else cell.textContent = move.from;
+
   redoStack.push(move);
+  renderHistoryBar();
   updateUndoRedoButtons();
 }
 
@@ -248,161 +230,65 @@ function redoMove(){
   if(redoStack.length === 0) return;
   const move = redoStack.pop();
   puzzle[move.r][move.c] = move.to === "" ? "" : (isNaN(move.to) ? move.to : Number(move.to));
-  const cell = boardTable.rows[move.r].cells[move.c];
+  const cell = sudokuBoard.rows[move.r].cells[move.c];
   const input = cell.querySelector('input');
-  if(input){
-    input.value = move.to;
-  } else {
-    cell.textContent = move.to;
-  }
+  if(input) input.value = move.to;
+  else cell.textContent = move.to;
+
   undoStack.push(move);
+  renderHistoryBar();
   updateUndoRedoButtons();
 }
 
-/* ---------- Hint function (fills one empty cell and records move) ---------- */
+/* ---------- Render small history bar dots ---------- */
+function renderHistoryBar(){
+  historyBar.innerHTML = '';
+  const maxDots = Math.min(history.length, 12); // show up to 12 recent moves
+  const start = Math.max(0, history.length - maxDots);
+  for(let i = start; i < history.length; i++){
+    const dot = document.createElement('div');
+    dot.className = 'history-dot';
+    if(i === history.length - 1) dot.classList.add('active'); // latest highlighted
+    // hover show tooltip
+    const mv = history[i];
+    dot.title = `#${i+1}: ${mv.type === 'hint' ? 'Hint' : 'Input'} r${mv.r+1}c${mv.c+1} → ${mv.to}`;
+    dot.addEventListener('click', () => {
+      // jump to that move: undo until length = i+1
+      while(history.length > i+1 && undoStack.length > 0){
+        undoMove();
+        history.pop();
+      }
+      // or redo if needed - but keep behavior simple
+      renderHistoryBar();
+    });
+    historyBar.appendChild(dot);
+  }
+}
+
+/* ---------- Hint (fills a random empty cell) ---------- */
 function giveHint(){
-  // find empty cell positions
   const empties = [];
   for(let r=0;r<9;r++){
     for(let c=0;c<9;c++){
       if(puzzle[r][c] === "") empties.push({r,c});
     }
   }
-  if(empties.length === 0){
-    alert('No empty cells to hint.');
-    return;
-  }
+  if(empties.length === 0){ alert('No empty cells for hint.'); return; }
   const pick = empties[Math.floor(Math.random()*empties.length)];
-  const r = pick.r; const c = pick.c;
-  const from = '';
-  const to = solution[r][c];
-
-  // commit
-  puzzle[r][c] = to;
-  undoStack.push({r,c,from:'',to:String(to),type:'hint'});
+  const val = solution[pick.r][pick.c];
+  // record move and set
+  puzzle[pick.r][pick.c] = val;
+  const move = { r: pick.r, c: pick.c, from: '', to: String(val), type: 'hint' };
+  undoStack.push(move);
   redoStack = [];
-  updateUndoRedoButtons();
-
-  // re-render to show as prefilled (hint becomes prefilled)
+  history.push(move);
   renderBoard();
-}
-
-/* ---------- Check full board correctness (user requested) ---------- */
-function checkFullBoard(){
-  // collect all values: prefilled are in puzzle for prefilled cells; user inputs have been committed into puzzle on blur
-  // We ensure puzzle contains both prefilled and user entries
-  for(let r=0;r<9;r++){
-    for(let c=0;c<9;c++){
-      const val = puzzle[r][c];
-      if(val === "" || Number(val) !== solution[r][c]){
-        // wrong or empty
-        // flash shake animation on board container
-        boardTable.classList.add('shake');
-        setTimeout(()=> boardTable.classList.remove('shake'), 600);
-        // play wrong sound
-        if(soundWrong) soundWrong.play();
-        // show result screen with fail message
-        showResult(false);
-        return;
-      }
-    }
-  }
-  // If reached, success:
-  if(soundWin) soundWin.play();
-  showResult(true, true);
-}
-
-/* ---------- Reset puzzle (same difficulty) ---------- */
-function resetPuzzle(){
-  if(!solution.length) return;
-  const diff = difficultySelect.value || 'medium';
-  puzzle = removeCellsFrom(solution, removeCountForDifficulty(diff));
-  undoStack = [];
-  redoStack = [];
-  updateUndoRedoButtons();
-  renderBoard();
-  elapsed = 0;
-  timerEl.textContent = 'Time: 00:00';
-}
-
-/* ---------- Show result modal ---------- */
-function showResult(success, completed=false){
-  stopTimer();
-  if(success){
-    resultMessage.textContent = `🎉 Congratulations ${playerName}! You completed the puzzle!`;
-    // confetti
-    confetti({
-      particleCount: 160,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-    // add glow to board quickly
-    boardTable.classList.add('correct-glow');
-    setTimeout(()=> boardTable.classList.remove('correct-glow'), 1200);
-  } else {
-    resultMessage.textContent = `❌ ${playerName}, you failed the game. Try again!`;
-  }
-  const mm = String(Math.floor(elapsed/60)).padStart(2,'0');
-  const ss = String(elapsed%60).padStart(2,'0');
-  resultTime.textContent = `Time: ${mm}:${ss}`;
-  resultScreen.classList.remove('hidden');
-}
-
-/* ---------- Play again (restart to welcome) ---------- */
-function playAgain(){
-  resultScreen.classList.add('hidden');
-  welcomeScreen.classList.remove('hidden');
-  boardTable.innerHTML = '';
-  greeting.textContent = '';
-  playerNameInput.value = '';
-  stopTimer();
-  elapsed = 0;
-  timerEl.textContent = 'Time: 00:00';
-  solution = [];
-  puzzle = [];
-  undoStack = [];
-  redoStack = [];
   updateUndoRedoButtons();
 }
 
-/* ---------- Theme toggle ---------- */
-function toggleTheme(){
-  document.body.classList.toggle('light');
-}
-toggleThemeBtn && toggleThemeBtn.addEventListener('click', toggleTheme);
-themeToggleFixed && themeToggleFixed.addEventListener('click', toggleTheme);
-
-/* ---------- Start game flow ---------- */
-function startGame(){
-  const name = playerNameInput.value.trim();
-  if(!name){ alert('Please enter your name'); playerNameInput.focus(); return; }
-  playerName = name;
-  greeting.textContent = `Player: ${playerName}`;
-
-  // build puzzle from base solution with removals
-  solution = deepCopy(BASE_SOLUTION);
-  const diff = difficultySelect.value || 'medium';
-  puzzle = removeCellsFrom(solution, removeCountForDifficulty(diff));
-
-  // ensure welcome hidden and result hidden
-  welcomeScreen.classList.add('hidden');
-  resultScreen.classList.add('hidden');
-
-  // reset stacks
-  undoStack = [];
-  redoStack = [];
-  updateUndoRedoButtons();
-
-  // render and start timer
-  renderBoard();
-  startTimer();
-}
-
-/* ---------- Commit any remaining inputs when user clicks Check or Reset ---------- */
-/* To ensure puzzle reflects DOM inputs (if user didn't blur), we collect current input values into puzzle before check or reset */
+/* ---------- Sync DOM inputs into puzzle (used before checking) ---------- */
 function syncInputsToPuzzle(){
-  // iterate rows and inputs
-  const inputs = boardTable.querySelectorAll('input');
+  const inputs = sudokuBoard.querySelectorAll('input');
   let idx = 0;
   for(let r=0;r<9;r++){
     for(let c=0;c<9;c++){
@@ -415,17 +301,116 @@ function syncInputsToPuzzle(){
   }
 }
 
+/* ---------- Check full board correctness ---------- */
+function checkFullBoard(){
+  syncInputsToPuzzle();
+  // check every cell
+  for(let r=0;r<9;r++){
+    for(let c=0;c<9;c++){
+      const v = puzzle[r][c];
+      if(v === "" || Number(v) !== solution[r][c]){
+        // fail
+        // shake board and show failure message with name
+        gameContainer.classList.add('shake');
+        setTimeout(()=> gameContainer.classList.remove('shake'), 600);
+        if(soundWrong) { soundWrong.currentTime = 0; soundWrong.play(); }
+        showResult(false);
+        return;
+      }
+    }
+  }
+  // success
+  if(soundWin){ soundWin.currentTime = 0; soundWin.play(); }
+  // confetti and glow
+  confetti({ particleCount: 140, spread: 80, origin:{ y:0.6 } });
+  gameContainer.classList.add('correct-glow');
+  setTimeout(()=> gameContainer.classList.remove('correct-glow'), 1200);
+  showResult(true);
+}
+
+/* ---------- Reset puzzle (same difficulty) ---------- */
+function resetPuzzle(){
+  if(!solution.length) return;
+  const diff = difficultySelect.value || 'medium';
+  puzzle = makePuzzleFromSolution(solution, removeCountForDiff(diff));
+  undoStack = []; redoStack = []; history = [];
+  updateUndoRedoButtons();
+  renderBoard();
+  elapsed = 0; timerEl.textContent = 'Time: 00:00';
+}
+
+/* ---------- Show result dialog ---------- */
+function showResult(success){
+  stopTimer();
+  if(success){
+    resultTitle.textContent = `🎉 Congrats, ${playerName}! You solved the puzzle!`;
+  } else {
+    resultTitle.textContent = `❌ ${playerName}, you failed the game. Try again!`;
+  }
+  const mm = String(Math.floor(elapsed/60)).padStart(2,'0');
+  const ss = String(elapsed%60).padStart(2,'0');
+  resultTime.textContent = `Time: ${mm}:${ss}`;
+  resultScreen.classList.remove('hidden');
+}
+
+/* ---------- Play again / close ---------- */
+function playAgain(){
+  resultScreen.classList.add('hidden');
+  welcomeScreen.classList.remove('hidden');
+  sudokuBoard.innerHTML = '';
+  greeting.textContent = '';
+  playerNameInput.value = '';
+  stopTimer();
+  elapsed = 0;
+  timerEl.textContent = 'Time: 00:00';
+  solution = []; puzzle = []; undoStack = []; redoStack = []; history = [];
+  updateUndoRedoButtons();
+}
+function closeResult(){ resultScreen.classList.add('hidden'); }
+
+/* ---------- Start game ---------- */
+function startGame(){
+  const name = playerNameInput.value.trim();
+  if(!name){ alert('Please enter your name'); playerNameInput.focus(); return; }
+  playerName = name;
+  greeting.textContent = `Player: ${playerName}`;
+
+  // build puzzle from base solution with removals
+  solution = deepCopy(BASE_SOLUTION);
+  const diff = difficultySelect.value || 'medium';
+  puzzle = makePuzzleFromSolution(solution, removeCountForDiff(diff));
+
+  welcomeScreen.classList.add('hidden');
+  resultScreen.classList.add('hidden');
+
+  undoStack = []; redoStack = []; history = [];
+  updateUndoRedoButtons();
+
+  renderBoard();
+  startTimer();
+}
+
+/* ---------- Theme toggle ---------- */
+function toggleTheme(){
+  document.body.classList.toggle('light');
+}
+
 /* ---------- Event bindings ---------- */
 startBtn.addEventListener('click', startGame);
+themeToggleStart.addEventListener('click', toggleTheme);
+themeToggleFixed.addEventListener('click', toggleTheme);
+
+hintBtn.addEventListener('click', giveHint);
+checkBtn.addEventListener('click', checkFullBoard);
+resetBtn.addEventListener('click', resetPuzzle);
+
 undoBtn.addEventListener('click', undoMove);
 redoBtn.addEventListener('click', redoMove);
-hintBtn.addEventListener('click', () => { giveHint(); updateUndoRedoButtons(); } );
-checkBtn.addEventListener('click', () => { syncInputsToPuzzle(); checkFullBoard(); } );
-resetBtn.addEventListener('click', resetPuzzle);
-playAgainBtn.addEventListener('click', playAgain);
-closeResultBtn.addEventListener('click', () => resultScreen.classList.add('hidden'));
 
-/* Keyboard shortcuts for undo/redo globally */
+playAgainBtn.addEventListener('click', playAgain);
+closeResultBtn.addEventListener('click', closeResult);
+
+// keyboard shortcuts
 document.addEventListener('keydown', (e) => {
   if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'){ e.preventDefault(); undoMove(); }
   if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y'){ e.preventDefault(); redoMove(); }
@@ -433,8 +418,7 @@ document.addEventListener('keydown', (e) => {
 
 /* ---------- Init ---------- */
 (function init(){
-  // show loading overlay until window load; handled by window 'load' listener
   welcomeScreen.classList.remove('hidden');
   resultScreen.classList.add('hidden');
-  updateUndoRedoButtons();
+  if(loadingOverlay) loadingOverlay.style.display = 'flex';
 })();
