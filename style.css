@@ -1,144 +1,159 @@
-/* Reset and basics */
-body, html {
-    margin: 0;
-    padding: 0;
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    color: #fff;
-    text-align: center;
+/* Modern glass UI Sudoku - Option A */
+/* ---------- Basics ---------- */
+:root{
+  --board-size: 360px;
+  --cell-size: 40px;
+  --glass-bg: rgba(255,255,255,0.06);
+  --accent: #00c6ff;
+  --accent-2: #80d0c7;
 }
 
-header {
-    margin-top: 20px;
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:#fff;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px;
 }
 
-#creator {
-    color: #80d0c7;
-    font-size: 14px;
+/* ---------- Overlay & boxes ---------- */
+.overlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: rgba(0,0,0,0.45);
+  z-index:30;
+}
+.hidden{ display:none !important; }
+
+.welcome-box, .result-box{
+  width: min(92%, 420px);
+  background: rgba(255,255,255,0.06);
+  border-radius:14px;
+  padding:26px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.02);
+  backdrop-filter: blur(8px) saturate(120%);
+  text-align:center;
 }
 
-#greeting {
-    margin-top: 5px;
-    font-weight: bold;
+.welcome-box h2, .result-box h2{ margin:0 0 8px }
+.welcome-box p{ margin:0 0 14px; color: #e6f7fbcc }
+
+/* ---------- Header ---------- */
+.page-header{ text-align:center; margin-top:8px; margin-bottom:12px }
+.page-header h1{ margin:0; font-size:24px; letter-spacing:0.6px }
+.creator{ margin:6px 0 0; color:var(--accent-2) }
+.greeting{ margin:6px 0 0; font-weight:600 }
+.timer{ margin:6px 0 12px; color:#ffec00; font-weight:700 }
+
+/* ---------- Controls ---------- */
+.controls{ display:flex; gap:10px; margin-bottom:12px; }
+.controls button{ padding:8px 12px; border-radius:8px; cursor:pointer; border:none; background:rgba(255,255,255,0.06); color: #fff; font-weight:600; transition:all .18s }
+.controls button:hover{ transform:translateY(-3px); box-shadow:0 8px 18px rgba(0,0,0,0.45) }
+
+/* Primary button style */
+button.primary{ background: linear-gradient(90deg,var(--accent),#0072ff); color:#fff }
+
+/* ---------- Game container & fixed board ---------- */
+#game-wrapper{ width:var(--board-size); max-width:95vw; }
+#game-container{
+  width:var(--board-size);
+  height:var(--board-size);
+  border-radius:12px;
+  background: var(--glass-bg);
+  padding:6px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px) saturate(130%);
 }
 
-#timer {
-    margin: 5px 0 20px;
-    font-weight: bold;
-    color: #ffec00;
+/* Table fixed layout (prevents resizing while typing) */
+table#sudoku-board{
+  width:100%;
+  height:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  border-radius:10px;
+  overflow:hidden;
 }
 
-/* Controls */
-.controls {
-    margin: 10px 0;
+/* Table cells fixed sized and centered */
+#sudoku-board td{
+  width: calc(100% / 9);
+  height: calc(100% / 9);
+  border:1px solid rgba(255,255,255,0.08);
+  text-align:center;
+  vertical-align:middle;
+  padding:0;
+  font-size:18px;
+  color:#fff;
+  transition: background .18s, transform .08s;
+  user-select:none;
 }
 
-button {
-    padding: 10px 18px;
-    margin: 5px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    background: #00c6ff;
-    color: #0f2027;
-    transition: 0.3s;
-}
-button:hover { transform: translateY(-2px); background: #0072ff; color: #fff; }
-
-/* Board Container */
-#game-container {
-    margin: 20px auto;
-    width: 360px;
-    height: 360px;
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(8px);
-    border-radius: 12px;
-    padding: 5px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+/* Input full-size, centered */
+#sudoku-board td input{
+  width:100%;
+  height:100%;
+  border:none;
+  outline:none;
+  background:transparent;
+  color:#fff;
+  font-weight:700;
+  font-size:18px;
+  text-align:center;           /* center-aligned numbers */
+  line-height: calc(var(--cell-size));
+  caret-color: var(--accent);
 }
 
-table {
-    width: 100%;
-    height: 100%;
-    border-collapse: collapse;
+/* Focus and hover */
+#sudoku-board td input:focus{
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.45), inset 0 0 24px rgba(0,198,255,0.08);
+  border-radius:6px;
+  transform: translateY(-2px);
 }
 
-td {
-    border: 1px solid rgba(255,255,255,0.2);
-    width: 40px;
-    height: 40px;
-    text-align: center;
-    vertical-align: middle;
-    font-size: 20px;
-    font-weight: bold;
-    transition: background 0.3s;
+/* Prefilled cell style */
+#sudoku-board td.prefilled{
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  color: #e0f7ff;
+  font-weight:800;
 }
 
-td input {
-    width: 100%;
-    height: 100%;
-    border: none;
-    outline: none;
-    text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-    background: transparent;
-    color: #fff;
+/* Bold 3x3 block borders (clear visible) */
+#sudoku-board tr td:nth-child(3),
+#sudoku-board tr td:nth-child(6) { border-right: 2px solid rgba(255,255,255,0.24); }
+#sudoku-board tr td:nth-child(1) { border-left: 2px solid rgba(255,255,255,0.24); }
+#sudoku-board tr td:nth-child(9) { border-right: 2px solid rgba(255,255,255,0.24); }
+
+#sudoku-board tr:nth-child(3) td,
+#sudoku-board tr:nth-child(6) td { border-bottom: 2px solid rgba(255,255,255,0.24); }
+#sudoku-board tr:nth-child(1) td { border-top: 2px solid rgba(255,255,255,0.24); }
+#sudoku-board tr:nth-child(9) td { border-bottom: 2px solid rgba(255,255,255,0.24); }
+
+/* small responsive tweaks */
+@media (max-width:420px){
+  :root{ --board-size:92vw; --cell-size: calc((92vw) / 9) }
+  .welcome-box{ padding:18px }
+  .controls{ flex-wrap:wrap; justify-content:center }
 }
 
-td input:focus {
-    background: rgba(255,255,255,0.2);
-    border-radius: 4px;
+/* Light theme */
+body.light{
+  background: linear-gradient(135deg,#f3f7fb,#eef3f7);
+  color:#0f1724;
 }
-
-/* Bold 3x3 Borders */
-tr td:nth-child(3), tr td:nth-child(6) { border-right: 2px solid #fff; }
-tr td:nth-child(1) { border-left: 2px solid #fff; }
-tr td:nth-child(9) { border-right: 2px solid #fff; }
-tr:nth-child(3) td, tr:nth-child(6) td { border-bottom: 2px solid #fff; }
-tr:nth-child(1) td { border-top: 2px solid #fff; }
-tr:nth-child(9) td { border-bottom: 2px solid #fff; }
-
-/* Overlay Screens */
-.overlay {
-    position: fixed;
-    top:0; left:0;
-    width:100%;
-    height:100%;
-    background: rgba(0,0,0,0.7);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    z-index: 10;
-    display: none;
-}
-
-.welcome-box, .result-box {
-    background: rgba(255,255,255,0.1);
-    padding: 40px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 360px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 6px 25px rgba(0,0,0,0.5);
-}
-
-.welcome-box input, .row select {
-    width: 70%;
-    padding: 10px;
-    margin: 15px 0;
-    border-radius: 6px;
-    border: none;
-    outline: none;
-    font-size: 16px;
-}
-
-/* Dark/Light mode classes */
-body.light {
-    background: linear-gradient(135deg,#cfd9df,#e2ebf0);
-    color: #111;
-}
-body.light td input { color: #111; }
-body.light td { color: #111; border-color: rgba(0,0,0,0.15); }
-body.light button { color:#fff; }
+body.light .welcome-box,
+body.light .result-box{ background: rgba(255,255,255,0.9); color:#0f1724 }
+body.light #game-container{ background: rgba(255,255,255,0.7) }
+body.light #sudoku-board td{ color:#0f1724; border-color: rgba(0,0,0,0.08) }
