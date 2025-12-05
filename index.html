@@ -1,91 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Modern Sudoku • Glass UI</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-  <!-- LOADING OVERLAY (hidden after load) -->
+  <!-- LOADING (hidden quickly on load) -->
   <div id="loadingOverlay" class="overlay loading">
     <div class="loader">
-      <div class="spinner"></div>
+      <div class="spinner" aria-hidden="true"></div>
       <div class="loader-text">Loading Modern Sudoku...</div>
     </div>
   </div>
 
-  <!-- WELCOME (visible on load until start) -->
-  <div id="welcome-screen" class="overlay">
+  <!-- WELCOME -->
+  <div id="welcomeScreen" class="overlay">
     <div class="welcome-box">
       <h2>Welcome to Modern Sudoku</h2>
-      <p>Enter your name and choose difficulty to start</p>
+      <p>Enter your name and choose a difficulty to start</p>
 
-      <input id="playerName" type="text" placeholder="Your name" />
+      <input id="playerName" type="text" placeholder="Your name" aria-label="Player name"/>
 
       <div class="row">
         <label for="difficulty">Difficulty</label>
-        <select id="difficulty">
+        <select id="difficulty" aria-label="Difficulty">
+          <option value="veryeasy">Very Easy</option>
           <option value="easy">Easy</option>
           <option value="medium" selected>Medium</option>
           <option value="hard">Hard</option>
         </select>
       </div>
 
-      <div class="row">
-        <button id="startBtn" class="primary">Start Game</button>
-        <button id="toggleThemeBtn">Toggle Light/Dark</button>
+      <div class="row actions">
+        <button id="startBtn" class="primary">
+          <!-- Play icon -->
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+          Start
+        </button>
+        <button id="themeToggleStart" title="Toggle Light/Dark">
+          <!-- Theme icon -->
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 3a1 1 0 0 1 0 2 7 7 0 1 0 7 7 1 1 0 0 1 2 0 9 9 0 1 1-9-9z"/></svg>
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- HEADER -->
+  <!-- TOP BAR / HEADER -->
   <header class="page-header">
     <h1>Modern Sudoku</h1>
     <p class="creator">Created by <strong>Sayedrahim Sadat</strong></p>
-    <p id="greeting" class="greeting"></p>
+    <p id="greeting" class="greeting" aria-live="polite"></p>
     <p id="timer" class="timer">Time: 00:00</p>
   </header>
 
-  <!-- Controls row (always visible) -->
+  <!-- Controls row -->
   <div class="controls" role="toolbar" aria-label="Game controls">
-    <button id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
-    <button id="redoBtn" title="Redo (Ctrl+Y)">Redo</button>
-    <button id="hintBtn">Hint</button>
-    <button id="checkBtn">Check</button>
-    <button id="resetBtn">Reset</button>
+    <button id="hintBtn" title="Hint">
+      <!-- Lightbulb icon -->
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 21h6v-1H9v1zm3-20a7 7 0 0 0-7 7c0 2.6 1.6 4.8 3.8 6.2L9 17h6l0.2-2.8C16.4 12.8 18 10.6 18 8a7 7 0 0 0-7-7z"/></svg>
+      Hint
+    </button>
+    <button id="checkBtn" title="Check solution">
+      <!-- Check icon -->
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 16.17L4.83 12 3.41 13.41 9 19l12-12L19.59 5z"/></svg>
+      Check
+    </button>
+    <button id="resetBtn" title="Reset puzzle">
+      <!-- Reset icon -->
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 6V4l-4 4 4 4V8c2.8 0 5 2.2 5 5 0 .5-.1 1-.2 1.5l1.5.4A7 7 0 0 0 12 6z"/></svg>
+      Reset
+    </button>
 
-    <!-- Theme toggle shown also in welcome; keep visible top-right via CSS -->
-    <button id="themeToggleFixed" class="theme-fixed" title="Toggle Light/Dark">🌗</button>
+    <!-- Theme toggle fixed -->
+    <button id="themeToggleFixed" class="theme-fixed" title="Toggle Light/Dark">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+    </button>
   </div>
 
-  <!-- GAME BOARD (fixed size) -->
-  <main id="game-wrapper">
-    <div id="game-container">
-      <table id="sudoku-board" aria-label="Sudoku board" role="grid"></table>
+  <!-- BOARD -->
+  <main id="gameWrapper">
+    <div id="gameContainer">
+      <table id="sudokuBoard" aria-label="Sudoku board" role="grid"></table>
+    </div>
+
+    <!-- Undo/Redo floating 3D buttons -->
+    <div class="floating-controls">
+      <button id="undoBtn" class="float-3d" title="Undo (Ctrl+Z)">
+        <!-- Undo icon -->
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 5V1L8 5l4 4V6c3.3 0 6 2.7 6 6a6 6 0 0 1-6 6H6v2h6a8 8 0 0 0 0-16z"/></svg>
+      </button>
+
+      <!-- mini history bar -->
+      <div id="historyBar" aria-hidden="true"></div>
+
+      <button id="redoBtn" class="float-3d" title="Redo (Ctrl+Y)">
+        <!-- Redo icon -->
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M6 19v4l4-4-4-4v3a8 8 0 1 1 0-16v2a6 6 0 1 0 0 12h6v-2H6z"/></svg>
+      </button>
     </div>
   </main>
 
-  <!-- RESULT (hidden initially) -->
-  <div id="result-screen" class="overlay hidden" role="dialog" aria-modal="true">
+  <!-- RESULT -->
+  <div id="resultScreen" class="overlay hidden" role="dialog" aria-modal="true">
     <div class="result-box">
-      <h2 id="result-message"></h2>
-      <p id="result-time"></p>
-      <div class="row">
-        <button id="playAgainBtn" class="primary">Play Again</button>
+      <h2 id="resultTitle"></h2>
+      <p id="resultTime"></p>
+      <div class="row actions">
+        <button id="playAgainBtn" class="primary">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+          Play Again
+        </button>
         <button id="closeResultBtn">Close</button>
       </div>
     </div>
   </div>
 
-  <!-- Confetti lib -->
+  <!-- confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
-  <!-- Sounds (optional; can keep or remove) -->
-  <audio id="sound-input" src="https://www.soundjay.com/buttons/sounds/button-3.mp3" preload="auto"></audio>
-  <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
-  <audio id="sound-win" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
+  <!-- sounds (optional) -->
+  <audio id="soundInput" src="https://www.soundjay.com/buttons/sounds/button-3.mp3" preload="auto"></audio>
+  <audio id="soundWrong" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
+  <audio id="soundWin" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
 
   <script src="script.js"></script>
 </body>
