@@ -1,64 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Sudoku</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Modern Sudoku • Glass UI</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- Welcome Screen -->
-<div id="welcome-screen" class="overlay">
+  <!-- WELCOME (visible on load) -->
+  <div id="welcome-screen" class="overlay">
     <div class="welcome-box">
-        <h2>Welcome to Modern Sudoku</h2>
-        <p>Enter your name to start:</p>
-        <input type="text" id="playerName" placeholder="Your name">
-        <div class="row">
-            <label for="difficulty">Difficulty:</label>
-            <select id="difficulty">
-                <option value="easy">Easy</option>
-                <option value="medium" selected>Medium</option>
-                <option value="hard">Hard</option>
-            </select>
-        </div>
-        <button id="startBtn">Start Game</button>
-    </div>
-</div>
+      <h2>Welcome to Modern Sudoku</h2>
+      <p>Enter your name and choose difficulty to start</p>
 
-<!-- Header -->
-<header>
+      <input id="playerName" type="text" placeholder="Your name" />
+
+      <div class="row">
+        <label for="difficulty">Difficulty</label>
+        <select id="difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <button id="startBtn" class="primary">Start Game</button>
+        <button id="toggleThemeBtn">Toggle Light/Dark</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="page-header">
     <h1>Modern Sudoku</h1>
-    <h3 id="creator">Created by: Sayedrahim Sadat</h3>
-    <h3 id="greeting"></h3>
-    <p id="timer">Time: 00:00</p>
-</header>
+    <p class="creator">Created by <strong>Sayedrahim Sadat</strong></p>
+    <p id="greeting" class="greeting"></p>
+    <p id="timer" class="timer">Time: 00:00</p>
+  </header>
 
-<!-- Controls -->
-<div class="controls">
+  <!-- CONTROLS -->
+  <div class="controls">
     <button id="hintBtn">Hint</button>
-    <button id="toggleThemeBtn">Toggle Dark/Light</button>
-</div>
+    <button id="checkBtn">Check</button>
+    <button id="resetBtn">Reset</button>
+  </div>
 
-<!-- Game Board -->
-<div id="game-container">
-    <table id="sudoku-board"></table>
-</div>
-
-<!-- Result Screen -->
-<div id="result-screen" class="overlay">
-    <div class="result-box">
-        <h2 id="result-message"></h2>
-        <p id="result-time"></p>
-        <button id="playAgainBtn">Play Again</button>
+  <!-- GAME BOARD (fixed size) -->
+  <main id="game-wrapper">
+    <div id="game-container">
+      <table id="sudoku-board" aria-label="Sudoku board"></table>
     </div>
-</div>
+  </main>
 
-<!-- Audio -->
-<audio id="correct-sound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
-<audio id="wrong-sound" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
-<audio id="win-sound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+  <!-- RESULT (hidden initially) -->
+  <div id="result-screen" class="overlay hidden">
+    <div class="result-box">
+      <h2 id="result-message"></h2>
+      <p id="result-time"></p>
+      <div class="row">
+        <button id="playAgainBtn" class="primary">Play Again</button>
+        <button id="closeResultBtn">Close</button>
+      </div>
+    </div>
+  </div>
 
-<script src="script.js"></script>
+  <!-- Sounds -->
+  <audio id="sound-correct" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+  <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+  <audio id="sound-win" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+
+  <script src="script.js"></script>
 </body>
 </html>
