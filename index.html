@@ -8,7 +8,15 @@
 </head>
 <body>
 
-  <!-- WELCOME (visible on load) -->
+  <!-- LOADING OVERLAY (hidden after load) -->
+  <div id="loadingOverlay" class="overlay loading">
+    <div class="loader">
+      <div class="spinner"></div>
+      <div class="loader-text">Loading Modern Sudoku...</div>
+    </div>
+  </div>
+
+  <!-- WELCOME (visible on load until start) -->
   <div id="welcome-screen" class="overlay">
     <div class="welcome-box">
       <h2>Welcome to Modern Sudoku</h2>
@@ -40,22 +48,27 @@
     <p id="timer" class="timer">Time: 00:00</p>
   </header>
 
-  <!-- CONTROLS -->
-  <div class="controls">
+  <!-- Controls row (always visible) -->
+  <div class="controls" role="toolbar" aria-label="Game controls">
+    <button id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
+    <button id="redoBtn" title="Redo (Ctrl+Y)">Redo</button>
     <button id="hintBtn">Hint</button>
     <button id="checkBtn">Check</button>
     <button id="resetBtn">Reset</button>
+
+    <!-- Theme toggle shown also in welcome; keep visible top-right via CSS -->
+    <button id="themeToggleFixed" class="theme-fixed" title="Toggle Light/Dark">🌗</button>
   </div>
 
   <!-- GAME BOARD (fixed size) -->
   <main id="game-wrapper">
     <div id="game-container">
-      <table id="sudoku-board" aria-label="Sudoku board"></table>
+      <table id="sudoku-board" aria-label="Sudoku board" role="grid"></table>
     </div>
   </main>
 
   <!-- RESULT (hidden initially) -->
-  <div id="result-screen" class="overlay hidden">
+  <div id="result-screen" class="overlay hidden" role="dialog" aria-modal="true">
     <div class="result-box">
       <h2 id="result-message"></h2>
       <p id="result-time"></p>
@@ -66,10 +79,13 @@
     </div>
   </div>
 
-  <!-- Sounds -->
-  <audio id="sound-correct" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
-  <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
-  <audio id="sound-win" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
+  <!-- Confetti lib -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  <!-- Sounds (optional; can keep or remove) -->
+  <audio id="sound-input" src="https://www.soundjay.com/buttons/sounds/button-3.mp3" preload="auto"></audio>
+  <audio id="sound-wrong" src="https://www.soundjay.com/buttons/sounds/button-10.mp3" preload="auto"></audio>
+  <audio id="sound-win" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
 
   <script src="script.js"></script>
 </body>
